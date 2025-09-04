@@ -1,14 +1,27 @@
+using BoostOrderApp.ViewModels;
+
 namespace BoostOrderApp.Views;
 
 public partial class CatalogPage : ContentPage
 {
-    public CatalogPage()
+    private readonly CatalogViewModel _viewModel;
+
+    public CatalogPage(CatalogViewModel viewModel)
     {
         InitializeComponent();
+        _viewModel = viewModel;
+        BindingContext = _viewModel;
     }
 
-    private async void OnPing(object sender, EventArgs e)
+    protected override async void OnAppearing()
     {
-        await DisplayAlert("Ping", "Shell + page wiring OK.", "OK");
+        base.OnAppearing();
+        if (_viewModel.Products.Count == 0)
+            await _viewModel.LoadAsync();
+    }
+
+    private async void Reload_Clicked(object sender, EventArgs e)
+    {
+        await _viewModel.LoadAsync();
     }
 }

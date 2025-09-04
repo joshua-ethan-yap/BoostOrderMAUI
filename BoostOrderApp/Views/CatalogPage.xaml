@@ -3,12 +3,32 @@
     x:Class="BoostOrderApp.Views.CatalogPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    Title="Catalog (Milestone 0)">
-    <VerticalStackLayout Padding="16"
-            Spacing="12">
-        <Label Text="Catalog placeholder"
-                FontSize="18"/>
-        <Button Text="Ping"
-                Clicked="OnPing"/>
-    </VerticalStackLayout>
+    xmlns:vm="clr-namespace:BoostOrderApp.ViewModels"
+    Title="Catalog">
+
+  <ContentPage.ToolbarItems>
+    <ToolbarItem Text="Reload" Clicked="Reload_Clicked" />
+  </ContentPage.ToolbarItems>
+
+  <Grid RowDefinitions="Auto,*" Padding="12">
+    <Label Text="{Binding Status}" Grid.Row="0" FontSize="12" />
+    <RefreshView Grid.Row="1" x:Name="Refresh" IsRefreshing="{Binding IsBusy}" Command="{Binding RefreshCommand}">
+      <CollectionView ItemsSource="{Binding Products}">
+        <CollectionView.EmptyView>
+          <VerticalStackLayout Padding="24" Spacing="8">
+            <Label Text="No products." HorizontalTextAlignment="Center"/>
+            <Label Text="Pull to refresh." FontSize="12" HorizontalTextAlignment="Center"/>
+          </VerticalStackLayout>
+        </CollectionView.EmptyView>
+        <CollectionView.ItemTemplate>
+          <DataTemplate>
+            <Grid ColumnDefinitions="80,*" Padding="8" ColumnSpacing="12">
+              <Image Source="{Binding ImageUrl}" WidthRequest="72" HeightRequest="72" Aspect="AspectFill"/>
+              <Label Grid.Column="1" Text="{Binding Name}" FontSize="16" VerticalTextAlignment="Center"/>
+            </Grid>
+          </DataTemplate>
+        </CollectionView.ItemTemplate>
+      </CollectionView>
+    </RefreshView>
+  </Grid>
 </ContentPage>
