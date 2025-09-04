@@ -1,0 +1,32 @@
+# Default ignored files
+/shelf/
+/workspace.xml
+
+# Build results
+bin/
+obj/
+[Bb]uild/
+[Ll]og/
+*.dll
+*.exe
+*.exe.config
+*.app
+*.app.dSYM/
+*.apk
+*.aab
+*.msix
+*.msixupload
+*.msixbundle
+*.appx
+*.appxbundle
+*.appxupload
+
+# Intermediate files
+*.pdb
+*.cache
+*.log
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+*.swp
