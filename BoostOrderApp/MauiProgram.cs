@@ -20,6 +20,7 @@ public static class MauiProgram
 
 		// Services
 		builder.Services.AddSingleton<ApiService>();
+		builder.Services.AddSingleton<DatabaseService>();
 
 		// ViewModels
 		builder.Services.AddSingleton<CatalogViewModel>();

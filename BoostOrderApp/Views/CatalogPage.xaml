@@ -4,31 +4,196 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:vm="clr-namespace:BoostOrderApp.ViewModels"
-    Title="Catalog">
+    xmlns:models="clr-namespace:BoostOrderApp.Models"
+    Title="{Binding CategoryName}">
 
-  <ContentPage.ToolbarItems>
-    <ToolbarItem Text="Reload" Clicked="Reload_Clicked" />
-  </ContentPage.ToolbarItems>
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="{Binding CompanyName}" />
+        <ToolbarItem IconImageSource="more_menu.png" />
+    </ContentPage.ToolbarItems>
 
-  <Grid RowDefinitions="Auto,*" Padding="12">
-    <Label Text="{Binding Status}" Grid.Row="0" FontSize="12" />
-    <RefreshView Grid.Row="1" x:Name="Refresh" IsRefreshing="{Binding IsBusy}" Command="{Binding RefreshCommand}">
-      <CollectionView ItemsSource="{Binding Products}">
-        <CollectionView.EmptyView>
-          <VerticalStackLayout Padding="24" Spacing="8">
-            <Label Text="No products." HorizontalTextAlignment="Center"/>
-            <Label Text="Pull to refresh." FontSize="12" HorizontalTextAlignment="Center"/>
-          </VerticalStackLayout>
-        </CollectionView.EmptyView>
-        <CollectionView.ItemTemplate>
-          <DataTemplate>
-            <Grid ColumnDefinitions="80,*" Padding="8" ColumnSpacing="12">
-              <Image Source="{Binding ImageUrl}" WidthRequest="72" HeightRequest="72" Aspect="AspectFill"/>
-              <Label Grid.Column="1" Text="{Binding Name}" FontSize="16" VerticalTextAlignment="Center"/>
+    <Grid RowDefinitions="Auto,*" BackgroundColor="#F5F5F5">
+        <!-- Search Bar -->
+        <Border Grid.Row="0" 
+                BackgroundColor="White" 
+                Margin="12,8" 
+                StrokeThickness="0">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="8" />
+            </Border.StrokeShape>
+            <Grid ColumnDefinitions="Auto,*,Auto" Padding="12">
+                <Image Grid.Column="0" 
+                       Source="search_icon.png" 
+                       WidthRequest="20" 
+                       HeightRequest="20" 
+                       VerticalOptions="Center" />
+                <Entry Grid.Column="1" 
+                       Placeholder="Search" 
+                       BackgroundColor="Transparent" />
+                <Border Grid.Column="2" 
+                        BackgroundColor="#FF2196F3" 
+                        WidthRequest="32" 
+                        HeightRequest="32">
+                    <Border.StrokeShape>
+                        <Ellipse />
+                    </Border.StrokeShape>
+                    <Label Text="3" 
+                           TextColor="White" 
+                           FontSize="14" 
+                           HorizontalOptions="Center" 
+                           VerticalOptions="Center" />
+                </Border>
             </Grid>
-          </DataTemplate>
-        </CollectionView.ItemTemplate>
-      </CollectionView>
-    </RefreshView>
-  </Grid>
+        </Border>
+
+        <!-- Products List -->
+        <RefreshView Grid.Row="1" 
+                     x:Name="Refresh" 
+                     IsRefreshing="{Binding IsBusy}" 
+                     Command="{Binding RefreshCommand}">
+            <CollectionView ItemsSource="{Binding Products}"
+                          BackgroundColor="Transparent">
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout Padding="24" Spacing="8">
+                        <Label Text="No products." HorizontalTextAlignment="Center"/>
+                        <Label Text="Pull to refresh." FontSize="12" HorizontalTextAlignment="Center"/>
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+                
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:ProductItem">
+                        <Border BackgroundColor="White" 
+                                Margin="12,6" 
+                                Padding="16"
+                                StrokeThickness="0">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="8" />
+                            </Border.StrokeShape>
+                            
+                            <Grid ColumnDefinitions="80,*,Auto" 
+                                  RowDefinitions="Auto,Auto,Auto,Auto" 
+                                  ColumnSpacing="12" 
+                                  RowSpacing="8">
+                                
+                                <!-- Product Image -->
+                                <Border Grid.Column="0" 
+                                        Grid.RowSpan="4" 
+                                        BackgroundColor="#F0F0F0" 
+                                        WidthRequest="80" 
+                                        HeightRequest="80"
+                                        StrokeThickness="0">
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="8" />
+                                    </Border.StrokeShape>
+                                    <Image Source="{Binding ImageUrl}" 
+                                           Aspect="AspectFill" />
+                                </Border>
+
+                                <!-- SKU and Stock Status -->
+                                <StackLayout Grid.Column="1" 
+                                           Grid.Row="0" 
+                                           Orientation="Horizontal" 
+                                           Spacing="8">
+                                    <Label Text="{Binding Sku, StringFormat='SKU_{0}'}" 
+                                           FontSize="12" 
+                                           TextColor="Gray" 
+                                           VerticalOptions="Center" />
+                                    <Label Text="{Binding StockQuantity, StringFormat='{0} In stock'}" 
+                                           FontSize="12" 
+                                           TextColor="#4CAF50" 
+                                           VerticalOptions="Center" />
+                                </StackLayout>
+
+                                <!-- Product Name -->
+                                <Label Grid.Column="1" 
+                                       Grid.Row="1" 
+                                       Text="{Binding Name}" 
+                                       FontSize="16" 
+                                       FontAttributes="Bold" 
+                                       TextColor="Black" />
+
+                                <!-- Price -->
+                                <Label Grid.Column="1" 
+                                       Grid.Row="2" 
+                                       Text="{Binding DisplayPrice}" 
+                                       FontSize="18" 
+                                       FontAttributes="Bold" 
+                                       TextColor="Black" />
+
+                                <!-- Quantity Controls -->
+                                <Grid Grid.Column="1" 
+                                      Grid.Row="3" 
+                                      ColumnDefinitions="Auto,80,Auto,Auto" 
+                                      ColumnSpacing="8" 
+                                      VerticalOptions="End">
+                                    
+                                    <!-- Unit Label -->
+                                    <Border Grid.Column="0" 
+                                            BackgroundColor="#F0F0F0" 
+                                            Padding="8,4" 
+                                            StrokeThickness="0">
+                                        <Border.StrokeShape>
+                                            <RoundRectangle CornerRadius="4" />
+                                        </Border.StrokeShape>
+                                        <Label Text="UNIT" 
+                                               FontSize="12" 
+                                               TextColor="Gray" />
+                                    </Border>
+
+                                    <!-- Minus Button -->
+                                    <Button Grid.Column="1" 
+                                            Text="−" 
+                                            FontSize="18" 
+                                            BackgroundColor="#F0F0F0" 
+                                            TextColor="Gray" 
+                                            WidthRequest="32" 
+                                            HeightRequest="32" 
+                                            CornerRadius="4" 
+                                            Padding="0"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:CatalogViewModel}}, Path=DecreaseQuantityCommand}"
+                                            CommandParameter="{Binding .}" />
+
+                                    <!-- Quantity -->
+                                    <Label Grid.Column="2" 
+                                           Text="{Binding CartQuantity, FallbackValue='1'}" 
+                                           FontSize="16" 
+                                           HorizontalOptions="Center" 
+                                           VerticalOptions="Center" 
+                                           WidthRequest="30"
+                                           HorizontalTextAlignment="Center" />
+
+                                    <!-- Plus Button -->
+                                    <Button Grid.Column="3" 
+                                            Text="+" 
+                                            FontSize="18" 
+                                            BackgroundColor="#F0F0F0" 
+                                            TextColor="Gray" 
+                                            WidthRequest="32" 
+                                            HeightRequest="32" 
+                                            CornerRadius="4" 
+                                            Padding="0"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:CatalogViewModel}}, Path=IncreaseQuantityCommand}"
+                                            CommandParameter="{Binding .}" />
+                                </Grid>
+
+                                <!-- Add to Cart Button -->
+                                <Button Grid.Column="2" 
+                                        Grid.RowSpan="4" 
+                                        Text="+" 
+                                        FontSize="16" 
+                                        TextColor="White" 
+                                        BackgroundColor="#2196F3" 
+                                        WidthRequest="36" 
+                                        HeightRequest="36" 
+                                        CornerRadius="24" 
+                                        VerticalOptions="Center"
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:CatalogViewModel}}, Path=AddToCartCommand}"
+                                        CommandParameter="{Binding .}" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+    </Grid>
 </ContentPage>

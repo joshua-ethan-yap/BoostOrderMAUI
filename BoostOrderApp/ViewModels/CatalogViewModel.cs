@@ -9,7 +9,10 @@ namespace BoostOrderApp.ViewModels;
 
 public sealed class CatalogViewModel : INotifyPropertyChanged
 {
+    public string CategoryName { get; set; } = "Categories Name";
+    public string CompanyName { get; set; } = "Company Name";
     private readonly ApiService _api;
+    private readonly DatabaseService _database;
     private bool _isBusy;
     private string _status = "Idle";
     public ObservableCollection<ProductItem> Products { get; } = new();
@@ -43,11 +46,19 @@ public sealed class CatalogViewModel : INotifyPropertyChanged
     }
 
     public Command RefreshCommand { get; }
+    public Command<ProductItem> IncreaseQuantityCommand { get; }
+    public Command<ProductItem> DecreaseQuantityCommand { get; }
+    public Command<ProductItem> AddToCartCommand { get; }
 
-    public CatalogViewModel(ApiService api)
+    public CatalogViewModel(ApiService api, DatabaseService database)
     {
         _api = api;
+        _database = database;
         RefreshCommand = new Command(async () => await LoadAsync());
+
+        IncreaseQuantityCommand = new Command<ProductItem>(IncreaseQuantity);
+        DecreaseQuantityCommand = new Command<ProductItem>(DecreaseQuantity);
+        AddToCartCommand = new Command<ProductItem>(AddToCart);
     }
 
     public async Task LoadAsync()
@@ -57,30 +68,49 @@ public sealed class CatalogViewModel : INotifyPropertyChanged
         try
         {
             Products.Clear();
-            Status = "Loading…";
 
-            // Online check is informational; request will still throw if no network.
             var online = Connectivity.Current.NetworkAccess == NetworkAccess.Internet;
 
-            var (items, total, totalPages) = await _api.GetAllProductsAsync();
-
-            var filtered = items.Where(p => string.Equals(p.Type, "variable", StringComparison.OrdinalIgnoreCase)).ToList();
-
-            foreach (var product in filtered)
+            // Try online first
+            if (online)
             {
-                Products.Add(new ProductItem
-                {
-                    Id = product.Id,
-                    Name = product.Name ?? $"Product {product.Id}",
-                    ImageUrl = product.Images?.FirstOrDefault()?.Src
-                });
-            }
+                Status = "Loading from server...";
+                var (items, total, totalPages) = await _api.GetAllProductsAsync();
 
-            Status = $"{(online ? "ONLINE" : "UNKNOWN")} • Total:{total} • Pages:{totalPages} • Shown (variable):{Products.Count}";
+                var filtered = items.Where(p => string.Equals(p.Type, "variable", StringComparison.OrdinalIgnoreCase)).ToList();
+
+                // Cache the data
+                var entities = ConvertToEntities(filtered);
+                await _database.SaveProductsAsync(entities);
+
+                // Use fresh data
+                PopulateFromApiData(items);
+                Status = $"ONLINE • Total:{total} • Pages:{totalPages} • Shown (variable):{Products.Count}";
+            }
+            else
+            {
+                // Load from cache
+                Status = "Loading from cache...";
+                var cachedProducts = await _database.GetProductsAsync();
+
+                PopulateFromCachedData(cachedProducts);
+
+                Status = $"OFFLINE • Cached products: {cachedProducts.Count}";
+            }
         }
         catch (Exception ex)
         {
-            Status = $"ERROR: {ex.Message}";
+            // If API fails, try cache as fallback
+            var cachedProducts = await _database.GetProductsAsync();
+            if (cachedProducts.Any())
+            {
+                PopulateFromCachedData(cachedProducts);
+                Status = $"ERROR (showing cached): {ex.Message}";
+            }
+            else
+            {
+                Status = $"ERROR (no cache): {ex.Message}";
+            }
         }
         finally
         {
@@ -88,6 +118,84 @@ public sealed class CatalogViewModel : INotifyPropertyChanged
         }
     }
 
+    private List<ProductEntity> ConvertToEntities(List<ProductDto> dtos)
+    {
+        return dtos.Select(dto => new ProductEntity
+        {
+            Id = dto.Id,
+            Name = dto.Name,
+            Type = dto.Type,
+            ImageUrl = dto.Images?.FirstOrDefault()?.Src,
+            // Store the computed display values for offline use
+            DisplaySku = dto.DisplaySku,
+            DisplayPrice = dto.DisplayPrice,
+            DisplayStock = dto.DisplayStock
+        }).ToList();
+    }
+
+    private void PopulateFromApiData(List<ProductDto> items)
+    {
+        var variableProducts = items.Where(p => string.Equals(p.Type, "variable", StringComparison.OrdinalIgnoreCase));
+
+        foreach (var product in variableProducts)
+        {
+            Products.Add(new ProductItem
+            {
+                Id = product.Id,
+                Name = product.Name ?? $"Product {product.Id}",
+                ImageUrl = product.ImageUrl,
+                DisplaySku = product.DisplaySku,
+                DisplayPrice = product.DisplayPrice,
+                DisplayStock = product.DisplayStock
+            });
+        }
+    }
+
+    private void PopulateFromCachedData(List<ProductEntity> cachedItems)
+    {
+        foreach (var product in cachedItems)
+        {
+            Products.Add(new ProductItem
+            {
+                Id = product.Id,
+                Name = product.Name ?? $"Product {product.Id}",
+                ImageUrl = product.ImageUrl,
+                DisplaySku = product.DisplaySku ?? "",
+                DisplayPrice = product.DisplayPrice ?? "RM0.00",
+                DisplayStock = product.DisplayStock ?? "0 In stock"
+            });
+        }
+    }
+
     private void OnPropertyChanged([CallerMemberName] string? name = null)
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        
+    private void IncreaseQuantity(ProductItem product)
+    {
+        if (product != null)
+        {
+            product.CartQuantity++;
+        }
+    }
+
+    private void DecreaseQuantity(ProductItem product)
+    {
+        if (product != null && product.CartQuantity > 1)
+        {
+            product.CartQuantity--;
+        }
+    }
+
+    private void AddToCart(ProductItem product)
+    {
+        if (product != null)
+        {
+            // TODO: Implement your add to cart logic here
+            // For now, just reset the quantity
+            product.CartQuantity = 1;
+            
+            // You might want to show a toast or update a cart counter
+            // Example: await Shell.Current.DisplayAlert("Added", $"Added {product.Name} to cart", "OK");
+        }
+    }
 }
