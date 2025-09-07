@@ -4,8 +4,8 @@
 - VS Code (or CLI)
 
 # Clone repo
-- git clone <repo-url>
-- cd BoostOrderApp
+- `git clone <repo-url>`
+- `cd BoostOrderApp`
 
 # Run on Android emulator
 `dotnet build -t:Run -f net9.0-android`
