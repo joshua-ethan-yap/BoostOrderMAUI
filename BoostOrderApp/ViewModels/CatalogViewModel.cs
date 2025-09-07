@@ -13,6 +13,7 @@ public sealed class CatalogViewModel : INotifyPropertyChanged
     public string CompanyName { get; set; } = "Company Name";
     private readonly ApiService _api;
     private readonly DatabaseService _database;
+    private readonly CartViewModel _cartViewModel;
     private bool _isBusy;
     private string _status = "Idle";
     public ObservableCollection<ProductItem> Products { get; } = new();
@@ -50,12 +51,13 @@ public sealed class CatalogViewModel : INotifyPropertyChanged
     public Command<ProductItem> DecreaseQuantityCommand { get; }
     public Command<ProductItem> AddToCartCommand { get; }
 
-    public CatalogViewModel(ApiService api, DatabaseService database)
+    public CatalogViewModel(ApiService api, DatabaseService database, CartViewModel cartViewModel)
     {
         _api = api;
         _database = database;
-        RefreshCommand = new Command(async () => await LoadAsync());
+        _cartViewModel = cartViewModel;
 
+        RefreshCommand = new Command(async () => await LoadAsync());
         IncreaseQuantityCommand = new Command<ProductItem>(IncreaseQuantity);
         DecreaseQuantityCommand = new Command<ProductItem>(DecreaseQuantity);
         AddToCartCommand = new Command<ProductItem>(AddToCart);
@@ -190,12 +192,10 @@ public sealed class CatalogViewModel : INotifyPropertyChanged
     {
         if (product != null)
         {
-            // TODO: Implement your add to cart logic here
-            // For now, just reset the quantity
+            _cartViewModel.AddItem(product, product.CartQuantity);
             product.CartQuantity = 1;
-            
-            // You might want to show a toast or update a cart counter
-            // Example: await Shell.Current.DisplayAlert("Added", $"Added {product.Name} to cart", "OK");
+
+            Application.Current.MainPage.DisplayAlert("Added to Cart", $"{product.Name} added to cart", "OK");
         }
     }
 }

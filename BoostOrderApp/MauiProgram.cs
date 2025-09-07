@@ -24,10 +24,11 @@ public static class MauiProgram
 
 		// ViewModels
 		builder.Services.AddSingleton<CatalogViewModel>();
+		builder.Services.AddSingleton<CartViewModel>();
 
 		// Views
-		builder.Services.AddSingleton<CatalogPage>();
-		builder.Services.AddSingleton<CartPage>();
+		builder.Services.AddTransient<CatalogPage>();
+		builder.Services.AddTransient<CartPage>();
 
 #if DEBUG
 		builder.Logging.AddDebug();

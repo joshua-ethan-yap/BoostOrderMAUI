@@ -19,7 +19,6 @@ public sealed class ProductDto
     [JsonPropertyName("images")] public List<ProductImageDto>? Images { get; set; }
     [JsonPropertyName("variations")] public List<VariationDto>? Variations { get; set; }
 
-    // UI properties - these will get the data from variations for variable products
     public int CartQuantity { get; set; } = 1;
     
     public string DisplaySku => GetFirstVariation()?.Sku ?? Sku ?? "";

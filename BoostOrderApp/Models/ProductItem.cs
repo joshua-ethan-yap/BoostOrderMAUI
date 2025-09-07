@@ -12,6 +12,10 @@ public sealed class ProductItem : INotifyPropertyChanged
     public string DisplayPrice { get; init; } = "RM0.00";
     public string DisplayStock { get; init; } = "0 In stock";
 
+    // Add these properties for cart functionality
+    public decimal Price { get; init; }
+    public int StockQuantity { get; init; }
+
     // UI-specific property that needs change notification
     private int _cartQuantity = 1;
     public int CartQuantity

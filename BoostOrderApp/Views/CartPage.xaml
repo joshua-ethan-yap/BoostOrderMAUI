@@ -3,10 +3,216 @@
     x:Class="BoostOrderApp.Views.CartPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    Title="Cart (Milestone 0)">
-    <VerticalStackLayout Padding="16"
-            Spacing="12">
-        <Label Text="Cart placeholder"
-                FontSize="18"/>
-    </VerticalStackLayout>
+    xmlns:vm="clr-namespace:BoostOrderApp.ViewModels"
+    xmlns:models="clr-namespace:BoostOrderApp.Models"
+    x:DataType="vm:CartViewModel"
+    Title="Cart">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="{Binding CompanyName}" />
+        <ToolbarItem IconImageSource="more_menu.png" 
+                     Command="{Binding ClearCartCommand}" />
+    </ContentPage.ToolbarItems>
+
+    <Grid RowDefinitions="*,Auto" 
+          BackgroundColor="#F5F5F5">
+        
+        <!-- Cart Items List -->
+        <CollectionView Grid.Row="0" 
+                        ItemsSource="{Binding CartItems}"
+                        BackgroundColor="Transparent"
+                        Margin="0,8,0,0">
+            
+            <CollectionView.EmptyView>
+                <VerticalStackLayout Padding="24" 
+                                   Spacing="8" 
+                                   VerticalOptions="Center">
+                    <Label Text="Your cart is empty" 
+                           HorizontalTextAlignment="Center"
+                           FontSize="18"
+                           TextColor="Gray" />
+                    <Label Text="Add some products to get started" 
+                           HorizontalTextAlignment="Center"
+                           FontSize="14"
+                           TextColor="Gray" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:CartItem">
+                    <SwipeView>
+                        <!-- Swipe to delete -->
+                        <SwipeView.RightItems>
+                            <SwipeItems>
+                                <SwipeItem Text="Remove"
+                                         BackgroundColor="Red"
+                                         Command="{Binding Source={RelativeSource AncestorType={x:Type vm:CartViewModel}}, Path=RemoveItemCommand}"
+                                         CommandParameter="{Binding .}" />
+                            </SwipeItems>
+                        </SwipeView.RightItems>
+
+                        <!-- Cart Item Content -->
+                        <Border BackgroundColor="White" 
+                                Margin="12,4" 
+                                Padding="16"
+                                StrokeThickness="0">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="8" />
+                            </Border.StrokeShape>
+                            
+                            <Grid ColumnDefinitions="80,*" 
+                                  RowDefinitions="Auto,Auto,Auto,Auto" 
+                                  ColumnSpacing="12" 
+                                  RowSpacing="4">
+                                
+                                <!-- Item Number and Stock Status -->
+                                <Label Grid.Column="0" 
+                                       Grid.Row="0"
+                                       Text="{Binding ItemNumber, StringFormat='{0}.'}" 
+                                       FontSize="16"
+                                       FontAttributes="Bold"
+                                       TextColor="Black"
+                                       VerticalOptions="Start" />
+
+                                <StackLayout Grid.Column="1" 
+                                           Grid.Row="0" 
+                                           Orientation="Horizontal" 
+                                           Spacing="8">
+                                    <Label Text="{Binding Sku, StringFormat='SKU_{0}'}" 
+                                           FontSize="12" 
+                                           TextColor="Gray" />
+                                    <Label Text="{Binding StockDisplay}" 
+                                           FontSize="12" 
+                                           TextColor="#4CAF50" />
+                                </StackLayout>
+
+                                <!-- Product Image -->
+                                <Border Grid.Column="0" 
+                                        Grid.Row="1" 
+                                        Grid.RowSpan="3"
+                                        BackgroundColor="#F0F0F0" 
+                                        WidthRequest="80" 
+                                        HeightRequest="80"
+                                        StrokeThickness="0"
+                                        Margin="0,4,0,0">
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="8" />
+                                    </Border.StrokeShape>
+                                    <Image Source="{Binding ImageUrl}" 
+                                           Aspect="AspectFill" />
+                                </Border>
+
+                                <!-- Product Name -->
+                                <Label Grid.Column="1" 
+                                       Grid.Row="1" 
+                                       Text="{Binding Name}" 
+                                       FontSize="16" 
+                                       FontAttributes="Bold" 
+                                       TextColor="Black"
+                                       Margin="0,4,0,0" />
+
+                                <!-- Unit Price -->
+                                <Label Grid.Column="1" 
+                                       Grid.Row="2" 
+                                       Text="{Binding UnitPrice}" 
+                                       FontSize="16" 
+                                       FontAttributes="Bold" 
+                                       TextColor="Black" />
+
+                                <!-- Quantity and Total -->
+                                <Grid Grid.Column="1" 
+                                      Grid.Row="3" 
+                                      ColumnDefinitions="Auto,*,Auto,Auto" 
+                                      ColumnSpacing="8"
+                                      Margin="0,8,0,0">
+                                    
+                                    <!-- Quantity Label -->
+                                    <Label Grid.Column="0" 
+                                           Text="Qty:" 
+                                           FontSize="14" 
+                                           TextColor="#2196F3" 
+                                           VerticalOptions="Center" />
+                                    
+                                    <!-- Quantity Value -->
+                                    <Label Grid.Column="1" 
+                                           Text="{Binding Quantity, StringFormat='{0} UNIT'}" 
+                                           FontSize="14" 
+                                           TextColor="#2196F3" 
+                                           FontAttributes="Bold"
+                                           VerticalOptions="Center" />
+                                    
+                                    <!-- Total Label -->
+                                    <Label Grid.Column="2" 
+                                           Text="Total:" 
+                                           FontSize="14" 
+                                           TextColor="#FF9800" 
+                                           VerticalOptions="Center" />
+                                    
+                                    <!-- Total Value -->
+                                    <Label Grid.Column="3" 
+                                           Text="{Binding TotalPrice}" 
+                                           FontSize="14" 
+                                           TextColor="#FF9800" 
+                                           FontAttributes="Bold"
+                                           VerticalOptions="Center" />
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </SwipeView>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Total Section -->
+        <Border Grid.Row="1" 
+                BackgroundColor="White" 
+                Padding="16"
+                StrokeThickness="0">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="12,12,0,0" />
+            </Border.StrokeShape>
+            
+            <Grid RowDefinitions="Auto,Auto,Auto" 
+                  RowSpacing="12">
+                
+                <!-- Divider -->
+                <BoxView Grid.Row="0" 
+                         BackgroundColor="#E0E0E0" 
+                         HeightRequest="1" />
+                
+                <!-- Total Summary -->
+                <Grid Grid.Row="1" 
+                      ColumnDefinitions="*,Auto">
+                    <Label Grid.Column="0" 
+                           Text="Total" 
+                           FontSize="16" 
+                           TextColor="Black" />
+                    <Label Grid.Column="1" 
+                           Text="{Binding CartTotal}" 
+                           FontSize="18" 
+                           FontAttributes="Bold" 
+                           TextColor="Black" />
+                </Grid>
+
+                <!-- Bottom Summary and Checkout -->
+                <Grid Grid.Row="2" 
+                      ColumnDefinitions="*,Auto">
+                    <Label Grid.Column="0" 
+                           Text="{Binding CartSummary}" 
+                           FontSize="16" 
+                           FontAttributes="Bold" 
+                           TextColor="Black"
+                           VerticalOptions="Center" />
+                    <Button Grid.Column="1" 
+                            Text="Checkout" 
+                            BackgroundColor="#2196F3" 
+                            TextColor="White" 
+                            CornerRadius="24" 
+                            Padding="24,12"
+                            FontSize="16"
+                            FontAttributes="Bold" />
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
 </ContentPage>

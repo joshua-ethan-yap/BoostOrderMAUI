@@ -94,11 +94,11 @@
                                            Grid.Row="0" 
                                            Orientation="Horizontal" 
                                            Spacing="8">
-                                    <Label Text="{Binding Sku, StringFormat='SKU_{0}'}" 
+                                    <Label Text="{Binding DisplaySku}" 
                                            FontSize="12" 
                                            TextColor="Gray" 
                                            VerticalOptions="Center" />
-                                    <Label Text="{Binding StockQuantity, StringFormat='{0} In stock'}" 
+                                    <Label Text="{Binding DisplayStock}" 
                                            FontSize="12" 
                                            TextColor="#4CAF50" 
                                            VerticalOptions="Center" />
@@ -123,7 +123,7 @@
                                 <!-- Quantity Controls -->
                                 <Grid Grid.Column="1" 
                                       Grid.Row="3" 
-                                      ColumnDefinitions="Auto,80,Auto,Auto" 
+                                      ColumnDefinitions="Auto,Auto,Auto,Auto" 
                                       ColumnSpacing="8" 
                                       VerticalOptions="End">
                                     
@@ -142,7 +142,7 @@
 
                                     <!-- Minus Button -->
                                     <Button Grid.Column="1" 
-                                            Text="−" 
+                                            Text="-" 
                                             FontSize="18" 
                                             BackgroundColor="#F0F0F0" 
                                             TextColor="Gray" 
